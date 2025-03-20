@@ -3,9 +3,9 @@
 
 The Smart Agriculture System is an IoT-based solution designed to enhance farming efficiency by integrating machine learning, image classification, and smart irrigation. This project enables farmers to:
 
-1.Diagnose plant diseases by uploading leaf images.
+1. Diagnose plant diseases by uploading leaf images.
 
-2.Automate irrigation based on real-time environmental conditions.
+2. Automate irrigation based on real-time environmental conditions.
 
 # 🚀 Features
 
