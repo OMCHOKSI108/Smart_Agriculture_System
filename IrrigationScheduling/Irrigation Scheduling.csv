@@ -1,4 +1,4 @@
-id,temperature,pressure,altitude,soilmiosture,note,status,class,date,time
+id,temperature,pressure,altitude,soilmoisture,note,status,class,date,time
 1,29.1,9984.53,-12.21,377,0,0,Very Dry,08-10-2022,22:06:24
 2,29.08,9984.36,-12.22,379,0,0,Very Dry,08-10-2022,22:06:24
 3,29.06,9984.56,-12.2,376,0,0,Very Dry,08-10-2022,22:06:24
