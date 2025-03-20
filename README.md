@@ -1,4 +1,4 @@
-# 🌱Smart_Agriculture_System
+# 🌱Smart Agriculture System
 # 📌 Overview
 
 The Smart Agriculture System is an IoT-based solution designed to enhance farming efficiency by integrating machine learning, image classification, and smart irrigation. This project enables farmers to:
@@ -14,10 +14,6 @@ The Smart Agriculture System is an IoT-based solution designed to enhance farmin
 ✅ Smart Irrigation System – Decides whether to irrigate based on temperature and soil moisture levels.
 
 ✅ Real-time Monitoring – Tracks temperature, humidity, and soil conditions.
-
-✅ IoT Integration – Data visualization and remote access.
-
-✅ Energy Efficient – Uses minimal power while maximizing efficiency.
 
 # 📷 Project Demo
 ![WhatsApp Image 2025-03-20 at 22 18 02_3f12eb2e](https://github.com/user-attachments/assets/2922b39f-d46c-469d-8063-daf6a3c5ac9c)
