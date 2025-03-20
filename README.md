@@ -34,8 +34,6 @@ Disease Detection: Upload a leaf image, and the system will classify whether it 
 
 Smart Irrigation: Based on temperature and soil moisture, the system will decide whether to irrigate.
 
-Monitoring: Farmers can track environmental conditions via an IoT dashboard.
-
 # 🤝 Contributors
 DEV PATEL [@devpatel0005](https://github.com/devpatel0005)
 
