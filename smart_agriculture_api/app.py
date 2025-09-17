@@ -14,7 +14,9 @@ from tensorflow.keras.models import Model
 from dotenv import load_dotenv
 
 app = Flask(__name__)
-CORS(app)
+
+# Enable CORS for specific origin
+CORS(app, resources={r"/*": {"origins": ["https://smart-agriculture-system-delta.vercel.app"]}})
 
 # Load Models
 irrigation_model, scaler = joblib.load("models/irrigation_model.pkl")
