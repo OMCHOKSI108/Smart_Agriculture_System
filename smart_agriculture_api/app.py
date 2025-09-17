@@ -1,6 +1,6 @@
 import base64
-import io
 import os
+import io
 import joblib
 import numpy as np
 import requests
@@ -13,52 +13,31 @@ from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, BatchNormaliz
 from tensorflow.keras.models import Model
 from dotenv import load_dotenv
 
-# ---------------------
-# Flask App Setup
-# ---------------------
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://smart-agriculture-system-delta.vercel.app"]}})
 
-# Force CPU (avoid GPU errors on Render)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+# Force CPU to avoid GPU errors
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# Load Models
+irrigation_model, scaler = joblib.load("models/irrigation_model.pkl")
 
-# Load environment variables
+base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(1024, activation='relu')(x)
+x = Dense(512, activation='relu')(x)
+x = BatchNormalization()(x)
+x = Dropout(0.2)(x)
+prediction = Dense(15, activation='softmax')(x)
+plant_model = Model(inputs=base_model.input, outputs=prediction)
+plant_model.load_weights("models/plant_disease_model.h5")
+
+# Weather API Key 
 load_dotenv()
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
-# ---------------------
-# Global model placeholders
-# ---------------------
-irrigation_model = None
-scaler = None
-plant_model = None
-base_model = None
-
-# ---------------------
-# Lazy model loading
-# ---------------------
-def load_models():
-    global irrigation_model, scaler, plant_model, base_model
-
-    if irrigation_model is None or plant_model is None:
-        # Load Irrigation Model
-        irrigation_model, scaler = joblib.load("models/irrigation_model.pkl")
-
-        # Load Plant Disease Model
-        base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
-        x = base_model.output
-        x = GlobalAveragePooling2D()(x)
-        x = Dense(1024, activation='relu')(x)
-        x = Dense(512, activation='relu')(x)
-        x = BatchNormalization()(x)
-        x = Dropout(0.2)(x)
-        prediction = Dense(15, activation='softmax')(x)
-        plant_model = Model(inputs=base_model.input, outputs=prediction)
-        plant_model.load_weights("models/plant_disease_model.h5")
-
-# ---------------------
 # Image Preprocessing
-# ---------------------
 def preprocess_image(img):
     img = img.resize((224, 224))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
@@ -66,16 +45,23 @@ def preprocess_image(img):
     img_array = img_array / 255.0  # Normalize
     return img_array
 
-# ---------------------
-# Class info
-# ---------------------
+
 class_names = [
-    "Pepper Bell - Bacterial Spot", "Pepper Bell - Healthy", "Potato - Early Blight",
-    "Potato - Late Blight", "Potato - Healthy", "Tomato - Bacterial Spot",
-    "Tomato - Early Blight", "Tomato - Late Blight", "Tomato - Leaf Mold",
-    "Tomato - Septoria Leaf Spot", "Tomato - Spider Mites (Two-Spotted Spider Mite)",
-    "Tomato - Target Spot", "Tomato - Yellow Leaf Curl Virus",
-    "Tomato - Mosaic Virus", "Tomato - Healthy"
+    "Pepper Bell - Bacterial Spot",
+    "Pepper Bell - Healthy",
+    "Potato - Early Blight",
+    "Potato - Late Blight",
+    "Potato - Healthy",
+    "Tomato - Bacterial Spot",
+    "Tomato - Early Blight",
+    "Tomato - Late Blight",
+    "Tomato - Leaf Mold",
+    "Tomato - Septoria Leaf Spot",
+    "Tomato - Spider Mites (Two-Spotted Spider Mite)",
+    "Tomato - Target Spot",
+    "Tomato - Yellow Leaf Curl Virus",
+    "Tomato - Mosaic Virus",
+    "Tomato - Healthy"
 ]
 
 causes = {
@@ -108,6 +94,7 @@ symptoms = {
     "Tomato - Mosaic Virus": "Mottled yellow and green leaf pattern, distorted leaf growth, and reduced fruit production.",
 }
 
+
 treatments = {
     "Pepper Bell - Bacterial Spot": "Apply copper-based fungicides. Avoid overhead watering. Use disease-resistant varieties.",
     "Pepper Bell - Healthy": "No treatment needed. Maintain proper watering and nutrient balance.",
@@ -126,9 +113,8 @@ treatments = {
     "Tomato - Healthy": "No treatment needed. Maintain good growing conditions."
 }
 
-# ---------------------
-# API Routes
-# ---------------------
+
+# API Routes 
 @app.route("/check_weather", methods=["GET"])
 def check_weather():
     location = request.args.get("location", "default_location")
@@ -149,27 +135,42 @@ def check_weather():
 @app.route("/predict/irrigation", methods=["POST"])
 def predict_irrigation():
     try:
-        load_models()
         data = request.json
         required_fields = ["temperature", "soil_moisture", "pressure", "altitude"]
         if not all(k in data for k in required_fields):
             return jsonify({"error": "Missing required fields"}), 400
-
+        
+        # Convert input values
         temp = float(data["temperature"])
         soil = float(data["soil_moisture"])
         pressure = float(data["pressure"])
         altitude = float(data["altitude"])
 
+
         X = np.array([[temp, pressure, altitude, soil]])
         X_scaled = scaler.transform(X)
+
         prediction = irrigation_model.predict(X_scaled)[0]
 
-        if prediction in [0, 1]:
-            advice = "Irrigation is recommended due to environmental conditions."
-        elif prediction in [2, 3]:
-            advice = "No irrigation needed; soil moisture is sufficient."
+        if prediction in [0, 1]: 
+            if temp > 35:
+                advice = "High temperature detected, irrigation is strongly recommended to prevent heat stress."
+            elif pressure < 1000:
+                advice = "Low atmospheric pressure detected, indicating possible weather changes. Irrigation is advised."
+            else:
+                advice = "Soil moisture is low, irrigation is recommended."
+
+        elif prediction in [2, 3]: 
+            if temp < 15:
+                advice = "Low temperature detected, moisture evaporation is slow. No irrigation needed."
+            elif pressure > 1020:
+                advice = "High atmospheric pressure detected, reducing evaporation. No irrigation required."
+            else:
+                advice = "Soil is sufficiently wet, irrigation is not required."
+
         else:
-            advice = "Unexpected model output. Verify input data."
+            advice = "Unexpected model output. Please verify input data."
+
 
         return jsonify({"prediction": advice})
     except Exception as e:
@@ -178,12 +179,11 @@ def predict_irrigation():
 @app.route("/predict/plant", methods=["POST"])
 def predict_plant_disease():
     try:
-        load_models()
         if "image" in request.files:
             file = request.files["image"]
             img = Image.open(file).convert("RGB")
         elif "image" in request.json:
-            image_data = request.json["image"].split(",")[1]
+            image_data = request.json["image"].split(",")[1]  
             img = Image.open(io.BytesIO(base64.b64decode(image_data))).convert("RGB")
         else:
             return jsonify({"error": "No image provided"}), 400
@@ -193,23 +193,24 @@ def predict_plant_disease():
         predicted_class_idx = np.argmax(prediction, axis=1)[0]
         confidence = float(np.max(prediction)) * 100
         predicted_class = class_names[predicted_class_idx]
-
-        if "Healthy" in predicted_class:
+        if predicted_class == "Pepper Bell - Healthy" or predicted_class == "Tomato - Healthy" or predicted_class == "Potato - Healthy": 
             return jsonify({"healthy": "Plant is healthy", "confidence": confidence})
+        cause = causes.get(predicted_class, "Cause details not available")
+        symptom = symptoms.get(predicted_class, "Symptom details not available")
+        treatment = treatments.get(predicted_class, "No treatment details available")
+
 
         return jsonify({
             "disease": predicted_class,
             "confidence": confidence,
-            "cause": causes.get(predicted_class, "Not available"),
-            "symptoms": symptoms.get(predicted_class, "Not available"),
-            "treatment": treatments.get(predicted_class, "Not available")
+            "cause": cause,
+            "symptoms": symptom,
+            "treatment": treatment
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ---------------------
-# Run App
-# ---------------------
+# Run the Flask app
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
