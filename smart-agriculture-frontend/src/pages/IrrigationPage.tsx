@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Leaf } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from "../config.ts";
+
 
 const IrrigationPage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,7 +42,7 @@ const IrrigationPage: React.FC = () => {
 
   const fetchWeatherData = async (): Promise<void> => {
     try {
-      const response = await fetch(`https://smart-agriculture-system-kzx1.onrender.com/check_weather?location=${location}`);
+      const response = await fetch(`${API_BASE}/check_weather?location=${location}`);
       const data: { rain_expected: boolean; temperature: number; pressure: number; altitude: number } = await response.json();
 
       setRainExpected(data.rain_expected);
@@ -62,7 +64,7 @@ const IrrigationPage: React.FC = () => {
     setAdvice("Fetching irrigation advice...");
 
     try {
-      const response = await fetch("https://smart-agriculture-system-kzx1.onrender.com/predict/irrigation", {
+      const response = await fetch(`${API_BASE}/predict/irrigation`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

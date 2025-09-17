@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Leaf, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_BASE } from "../config.ts";
 
 const DetectPage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const DetectPage: React.FC = () => {
 
     try {
       const base64Data = selectedImage.split(",")[1];
-      const response = await fetch("https://smart-agriculture-system-kzx1.onrender.com/predict/plant", {
+      const response = await fetch(`${API_BASE}/predict/plant`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: `data:image/jpeg;base64,${base64Data}` }),
