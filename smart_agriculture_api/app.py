@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 CORS(app)
 
-# ----------------- Load Models -----------------
+# Load Models
 irrigation_model, scaler = joblib.load("models/irrigation_model.pkl")
 
 base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
@@ -30,11 +30,11 @@ prediction = Dense(15, activation='softmax')(x)
 plant_model = Model(inputs=base_model.input, outputs=prediction)
 plant_model.load_weights("models/plant_disease_model.h5")
 
-# ----------------- Weather API Key -----------------
+# Weather API Key 
 load_dotenv()
 WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
-# ----------------- Helper Functions -----------------
+# Image Preprocessing
 def preprocess_image(img):
     img = img.resize((224, 224))
     img_array = tf.keras.preprocessing.image.img_to_array(img)
@@ -111,7 +111,7 @@ treatments = {
 }
 
 
-# ----------------- API Routes -----------------
+# API Routes 
 @app.route("/check_weather", methods=["GET"])
 def check_weather():
     location = request.args.get("location", "default_location")
@@ -120,7 +120,7 @@ def check_weather():
     if response.status_code == 200:
         weather_data = response.json()
         rain_forecast = "rain" in weather_data["weather"][0]["description"].lower()
-        altitude = weather_data["coord"]["lat"] * 0.1  # Approximate altitude (modify if needed)
+        altitude = weather_data["coord"]["lat"] * 0.1
         return jsonify({
             "rain_expected": rain_forecast,
             "temperature": weather_data["main"]["temp"],
@@ -180,7 +180,7 @@ def predict_plant_disease():
             file = request.files["image"]
             img = Image.open(file).convert("RGB")
         elif "image" in request.json:
-            image_data = request.json["image"].split(",")[1]  # Remove base64 prefix
+            image_data = request.json["image"].split(",")[1]  
             img = Image.open(io.BytesIO(base64.b64decode(image_data))).convert("RGB")
         else:
             return jsonify({"error": "No image provided"}), 400
@@ -207,6 +207,6 @@ def predict_plant_disease():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ----------------- Run Flask App -----------------
+# Run the Flask app
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
