@@ -32,7 +32,7 @@ const DetectPage: React.FC = () => {
 
     try {
       const base64Data = selectedImage.split(",")[1];
-      const response = await fetch("http://127.0.0.1:5000/predict/plant", {
+      const response = await fetch("https://smart-agriculture-system-kzx1.onrender.com/predict/plant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: `data:image/jpeg;base64,${base64Data}` }),

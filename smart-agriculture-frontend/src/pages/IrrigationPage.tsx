@@ -40,7 +40,7 @@ const IrrigationPage: React.FC = () => {
 
   const fetchWeatherData = async (): Promise<void> => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/check_weather?location=${location}`);
+      const response = await fetch(`https://smart-agriculture-system-kzx1.onrender.com/check_weather?location=${location}`);
       const data: { rain_expected: boolean; temperature: number; pressure: number; altitude: number } = await response.json();
 
       setRainExpected(data.rain_expected);
@@ -62,7 +62,7 @@ const IrrigationPage: React.FC = () => {
     setAdvice("Fetching irrigation advice...");
 
     try {
-      const response = await fetch("http://127.0.0.1:5000/predict/irrigation", {
+      const response = await fetch("https://smart-agriculture-system-kzx1.onrender.com/predict/irrigation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
