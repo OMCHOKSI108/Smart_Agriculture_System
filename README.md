@@ -4,6 +4,10 @@ FarmFriend is an intelligent agricultural solution designed to empower farmers b
 
 -----
 
+## Link : [Deployment](https://smart-agriculture-system-delta.vercel.app/)
+
+----
+
 ## Key Features
 
   * **Real-time Disease Detection:** Instantly identify plant diseases by uploading an image. Our system uses a high-accuracy deep learning model to provide a quick diagnosis.
