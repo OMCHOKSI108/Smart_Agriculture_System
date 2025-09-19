@@ -4,7 +4,7 @@ FarmFriend is an intelligent agricultural solution designed to empower farmers b
 
 -----
 
-## Link : [Deployment](https://smart-agriculture-system-delta.vercel.app/)
+## Link : [FarmFriend](https://smart-agriculture-system-delta.vercel.app/)
 
 ----
 
